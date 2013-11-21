@@ -27,4 +27,22 @@ tl;dr
 # starts yadt showcase: 5 minions, and one broadcaster
 # visit http://localhost:8080/hosts-overview.html?target=showcase&col_width=10
 ./start-showcase 5 maxcols
+
+
+# do something with yadtshell, for example:
+start service://* -p 5
+
+stop service://*
+```
+
+for more commands, see the
+[cheatsheet](http://www.yadt-project.org/cheatsheet-0.2.pdf)
+and the [wiki](https://github.com/yadt/yadtshell/wiki).
+
+```bash
+# to stop all minions, simply run
+./stop-showcase
+
+# then exit the yadtshell with
+exit
 ```
