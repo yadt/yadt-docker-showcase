@@ -1,0 +1,17 @@
+#!/bin/bash
+set -e -E -u
+
+OUT=out
+mkdir -p $OUT
+
+echo "building all showcase images"
+
+for IMAGE_DIR in images/*/*; do
+    echo $IMAGE_DIR
+    NAME=$(basename $IMAGE_DIR)
+    echo "-- building $NAME image"
+    docker build -rm -t yadt/$NAME $IMAGE_DIR | tee $OUT/$NAME.log
+    echo -e "\n\n\n\n\n\n\n\n"
+done
+
+echo "done."

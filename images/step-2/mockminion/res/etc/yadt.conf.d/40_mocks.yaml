@@ -1,0 +1,4 @@
+services:
+    topservice:
+        needs_services: [backservice]
+    backservice:

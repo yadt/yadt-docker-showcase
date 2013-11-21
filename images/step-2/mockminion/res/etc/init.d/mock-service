@@ -1,0 +1,28 @@
+#!/bin/bash
+set -u -e -E -o pipefail
+
+SERVICE=$(basename $0)
+SERVICE_DIR=$(dirname $0)
+CMD=$1
+STATUS=/tmp/status-$SERVICE
+EC=0
+YADT_SERVICES=/etc/yadt.services
+BEHAVIOUR=/tmp/behaviour-$SERVICE-$CMD
+
+[[ -x $BEHAVIOUR ]] && $BEHAVIOUR
+
+case "$CMD" in
+    start)
+        echo 0 > $STATUS
+        sleep 1
+        ;;
+    stop)
+        echo 3 > $STATUS
+        sleep 1
+        ;;
+    status)
+        EC=$(cat $STATUS 2> /dev/null) || EC=1
+        ;;
+esac
+
+exit $EC

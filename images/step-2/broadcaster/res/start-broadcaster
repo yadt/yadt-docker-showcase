@@ -1,0 +1,5 @@
+#!/bin/bash
+
+service yadtbroadcast-service start
+/usr/sbin/sshd -D
+

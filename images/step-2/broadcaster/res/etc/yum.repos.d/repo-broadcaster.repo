@@ -1,0 +1,5 @@
+[repo-broadcaster]
+name=repo-broadcaster
+baseurl=file:///repo-broadcaster
+enabled=1
+gpgcheck=0

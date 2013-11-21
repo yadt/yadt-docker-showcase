@@ -1,0 +1,5 @@
+[repo-minion]
+name=repo-minion
+baseurl=file:///repo-minion
+enabled=1
+gpgcheck=0

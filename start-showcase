@@ -1,0 +1,74 @@
+#!/bin/bash
+set -u -e -E
+
+MINION_COUNT=${1:-3}
+VIEW_VARIANT=${2:-}
+
+MINION_IMAGE=yadt/mockminion
+YADT_IMAGE_PREFIX=yadt/
+DNSMASQ=out/etc/dnsmasq.d/0hosts
+TARGET=out/showcase/target
+VIEW=out/showcase/view
+STOP_SHOWCASE=out/showcase/stop-showcase
+HOSTNAME_PREFIX=minion
+YBC_NAME=ybc
+YBC_HTTP_PORT=8080
+YBC_WS_PORT=8081
+
+echo "the yadt showcase, based on docker"
+
+echo "-- starting $MINION_COUNT minions"
+for NR in $(seq -w 1 $MINION_COUNT); do
+    docker run -d -dns 8.8.8.8 -h $HOSTNAME_PREFIX$NR $MINION_IMAGE /usr/sbin/sshd -D
+done
+
+echo "-- starting broadcaster"
+docker run -d -h $YBC_NAME -p $YBC_HTTP_PORT:8080 -p $YBC_WS_PORT:8081 yadt/broadcaster /usr/sbin/sshd -D
+
+
+echo "-- setting up environment"
+DIDS=$(docker ps | grep $YADT_IMAGE_PREFIX | cut -d " " -f 1)
+echo "---- yadt container found: "$DIDS
+
+mkdir -p $(dirname $DNSMASQ)
+rm -f $DNSMASQ
+exec 5>$DNSMASQ
+
+mkdir -p $(dirname $TARGET)
+rm -f $TARGET
+exec 6>$TARGET
+echo "hosts:" >&6
+echo -n "-" >&6
+
+exec 7>$STOP_SHOWCASE
+
+echo "---- integrating yadt containers: dnsmasq, target file, stop script"
+for DID in $DIDS; do
+    INSPECT=$(docker inspect $DID)
+    IP=$(sed -n '/"IPAddress":/{s/.*": "//;T;s/".*//;p}' <<< "$INSPECT")
+    HOSTNAME=$(sed -n '/"Hostname":/{s/.*": "//;T;s/".*//;p}' <<< "$INSPECT")
+    echo "address=/$HOSTNAME/$IP" >&5
+    echo -n " $HOSTNAME" >&6
+    echo "ssh -o ConnectTimeout=4 -o BatchMode=yes -o CheckHostIP=no -o StrictHostKeyChecking=no $IP service sshd stop &" >&7
+done
+echo >&6
+echo "wait" >&7
+chmod a+rx $STOP_SHOWCASE
+
+echo "---- creating view definition"
+rm -f $VIEW
+echo "info-view: [${VIEW_VARIANT:+$VIEW_VARIANT, }matrix, color]" > $VIEW
+
+echo "---- closing all generated files"
+exec 5>&- 6>&- 7>&-
+
+echo "-- starting yadtshell"
+echo "---- yadt broadcaster served under:"
+echo "------ http://localhost:$YBC_HTTP_PORT/hosts-overview.html?target=showcase&col_width=10"
+echo "------ http://localhost:$YBC_HTTP_PORT/targets-overview.html?targets=showcase"
+echo "------ http://localhost:$YBC_HTTP_PORT/artefacts-overview.html?ignore_prefix=&target=showcase"
+
+echo "---- for more information: https://github.com/yadt/yadtshell/wiki"
+docker run -i -t -dns 127.0.0.1 -h yadtshell -v $PWD/out/etc/dnsmasq.d/:/etc/dnsmasq.d/:rw -v $PWD/out/showcase/:/showcase:rw -w /showcase -e HOME=/root yadt/shell /start-showcase
+
+echo "done."

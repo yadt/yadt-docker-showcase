@@ -1,0 +1,6 @@
+#!/bin/bash
+
+service dnsmasq start
+yadtshell status
+yadtshell start service://ybc/*
+init-yadtshell

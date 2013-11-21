@@ -1,0 +1,44 @@
+#!/bin/bash
+set -u -e -E
+
+DOCKER_PID=/var/run/docker.pid
+DOCKER_SOCK=/var/run/docker.sock
+DOCKER_LOG=/tmp/docker.log
+DOCKERUI_CID=/tmp/dockerui.cid
+DOCKERUI_PORT=9000
+
+IP=${1:-$(hostname -I | cut -f 1 -d " ")}
+
+echo "preparing showcase"
+echo "-- configuring services with ip $IP"
+
+echo "-- starting docker daemon"
+if [[ -e $DOCKER_PID ]]; then
+    echo "---- stopping running docker daemon with pid $(cat $DOCKER_PID)"
+    sudo kill $(cat $DOCKER_PID)
+    sudo rm $DOCKER_SOCK
+fi
+
+echo "---- starting docker daemon"
+sudo docker -d -r=false -H tcp://$IP:4243 -H unix://$DOCKER_SOCK -api-enable-cors > $DOCKER_LOG 2>&1 &
+while [[ ! -S $DOCKER_SOCK ]]; do
+    sleep 1
+    echo "------ waiting for daemon to start"
+done
+echo "---- docker started, log file is $DOCKER_LOG"
+
+echo "-- starting dockerui container"
+if [[ -e $DOCKERUI_CID ]]; then
+    CID=$(cat $DOCKERUI_CID)
+    echo "---- stopping running dockerui container with cid $CID"
+    if [[ -n $CID ]]; then
+        docker stop -t=4 $(cat $DOCKERUI_CID) > /dev/null
+    fi
+    rm -f $DOCKERUI_CID
+fi
+
+echo "---- starting container"
+docker run -d -dns 8.8.8.8 -p $DOCKERUI_PORT:9000 -cidfile=$DOCKERUI_CID crosbymichael/dockerui -e="http://$IP:4243" > /dev/null
+echo "---- dockerui started, served at http://localhost:$DOCKERUI_PORT/"
+
+echo "done."

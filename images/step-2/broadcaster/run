@@ -1,0 +1,2 @@
+docker run -d -p 8080:8080 -p 8081:8081 yadt/broadcaster /usr/bin/yadtbroadcast-server.py
+
