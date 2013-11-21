@@ -7,6 +7,8 @@ Prerequisites
 -------------
 
 * [docker](https://www.docker.io/): *an open source project to pack, ship and run any application as a lightweight container*
+  * (strongly recommended) use docker as [non-root user](http://docs.docker.io/en/latest/use/basics/#why-sudo)
+
 * [bash](http://www.gnu.org/software/bash/) *Bash is the shell, or command language interpreter, that will appear in the GNU operating system.*
 
 
@@ -32,7 +34,9 @@ tl;dr
 # do something with yadtshell, for example:
 start service://* -p 5
 
-stop service://*
+stop service://minion*/*
+
+# ...
 ```
 
 for more commands, see the
@@ -40,7 +44,8 @@ for more commands, see the
 and the [wiki](https://github.com/yadt/yadtshell/wiki).
 
 ```bash
-# to stop all minions, simply run
+# when getting tired of yadt:
+# stop all minions, simply run
 ./stop-showcase
 
 # then exit the yadtshell with
