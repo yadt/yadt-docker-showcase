@@ -3,6 +3,7 @@ yadt-docker-showcase
 
 or: *yadt meets docker*
 
+
 Prerequisites
 -------------
 
@@ -51,3 +52,14 @@ and the [wiki](https://github.com/yadt/yadtshell/wiki).
 # then exit the yadtshell with
 exit
 ```
+
+
+Next Steps
+----------
+
+* improving documentation
+* creating a dedicated vagrant box (so you dont have to fiddle around with docker installations)
+* more robust start- and stop-showcase scripts
+
+* refactoring the yadtshell system tests
+
